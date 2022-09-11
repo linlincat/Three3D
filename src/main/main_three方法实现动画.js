@@ -31,10 +31,14 @@ const controls = new OrbitControls(camera, renderer.domElement)
 const axesHelper = new THREE.AxesHelper( 5 );
 scene.add(axesHelper)
 
-gsap.to(cube.position, {x: 5, duration: 5, ease: "power1.inOut"})
-gsap.to(cube.rotation, {x: 6 * Math.PI, duration: 5, ease: "power.inOut"})
-function render() {
+// Clock  跟踪时间
+const clock = new THREE.Clock();
 
+function render() {
+  // 获取时钟总时间
+  let time = clock.getElapsedTime();
+  let t = time  % 5;
+  cube.position.x = t * 1;
   renderer.render(scene, camera);
   requestAnimationFrame(render);
 }
