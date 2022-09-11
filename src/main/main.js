@@ -1,5 +1,6 @@
 import * as THREE from 'three'   
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+import { Clock } from 'three'
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'  //轨道控制
 
 const scene = new THREE.Scene()
 
@@ -28,10 +29,14 @@ const controls = new OrbitControls(camera, renderer.domElement)
 const axesHelper = new THREE.AxesHelper( 5 );
 scene.add(axesHelper)
 
+// Clock  跟踪时间
+const clock = new THREE.Clock();
+
 function render() {
-  cube.position.x += 0.01;
-  cube.rotation.x += 0.01;
-  if (cube.position.x > 5) cube.position.x = 0;
+  // 获取时钟总时间
+  let time = clock.getElapsedTime();
+  let t = time  % 5;
+  cube.position.x = t * 1;
   renderer.render(scene, camera);
   requestAnimationFrame(render);
 }
