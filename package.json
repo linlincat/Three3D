@@ -1,0 +1,21 @@
+{
+  "name": "v",
+  "version": "1.0.0",
+  "description": "kkk",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel": "^2.7.0",
+    "parcel-bundler": "^1.12.5"
+  },
+  "dependencies": {
+    "dat.gui": "^0.7.9",
+    "gsap": "^3.11.1",
+    "three": "^0.144.0"
+  }
+}
