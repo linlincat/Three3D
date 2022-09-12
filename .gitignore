@@ -9,7 +9,6 @@ lerna-debug.log*
 
 node_modules
 .cache
-parcel-cache
 .parcel-cache
 .DS_Store
 dist
