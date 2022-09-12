@@ -21,27 +21,6 @@ const  cubeMaterial  = new THREE.MeshBasicMaterial({color:0xffff00})
 const  cube  = new THREE.Mesh(cubeGeomeetry,cubeMaterial)
 //  将网格添加到场景中
 scene.add(cube)
-const gui = new dat.GUI();
-gui.add(cube.position, 'x').min(0).max(5).step(0.01).name("移动X轴").onChange((value) => {
-  // console.log(value)
-}).onFinishChange((value) => {
-  // console.log(value)
-})
-const params = {
-  color: "#ffff00",
-  fn: () => {
-    // 设置gsap动画
-    gsap.to(cube.position, {x: 5,  rotation: 360, duration: 2,yoyo: true,  ease: "power2.out", repeat: -1});
-  }
-}
-gui.addColor(params, "color").onChange((value) => {
-  cube.material.color.set(value)
-})
-gui.add(cube, "visible").name("是否显示")
-
-var floder = gui.addFolder('设置立方体')
-floder.add(cube.material, 'wireframe').name('设置线框')
-floder.add(params, 'fn').name("触发运动")
 //  创建渲染器
 const  renderer   = new THREE.WebGL1Renderer()
 //  设置渲染器舞台大小
@@ -55,8 +34,8 @@ controls.enableDamping = true
 // 添加坐标轴辅助器
 const axesHelper = new THREE.AxesHelper(5);
 scene.add(axesHelper)
+//  将场景与摄像机渲染出来
 
-// 双击全屏/关闭全屏
 window.addEventListener('dblclick', () => {
   const fullscreenElement = document.fullscreenElement;
   if (!fullscreenElement) {
@@ -65,7 +44,7 @@ window.addEventListener('dblclick', () => {
     document.exitFullscreen()
   }
 })
-//  将场景与摄像机渲染出来
+
 function render() {
   // yoyo gsap动画要求在循环渲染中更新
   controls.update();
