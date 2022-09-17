@@ -17,7 +17,7 @@ scene.add(camera)
 const  cubeGeomeetry  =  new THREE.BoxGeometry(1,1,1);
 //  创建材质
 const  cubeMaterial  = new THREE.MeshBasicMaterial({color:0xffff00}) 
-//  融合到网格中国呢
+//  融合到网格中
 const  cube  = new THREE.Mesh(cubeGeomeetry,cubeMaterial)
 //  将网格添加到场景中
 scene.add(cube)
