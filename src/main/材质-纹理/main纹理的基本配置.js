@@ -11,44 +11,33 @@ const scene = new THREE.Scene()
 //  创建穿透摄像机
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000)
 //  设置摄像机位置
-camera.position.set(0,0,10)
+camera.position.set(0,0,5)
 //  将摄像机添加到场景
 scene.add(camera)
 // 导入纹理
 const textureLoader = new THREE.TextureLoader();
 // 载入颜色纹理
 const doorColorTexture = textureLoader.load("./textures/door/color.jpg");
-const doorAlphaTexture = textureLoader.load("./textures/door/alpha.jpg");
-const doorAoTexture = textureLoader.load("./textures/door/ambientOcclusion.jpg");
+// 设置纹理
+// doorColorTexture.offset.x = 0.5
+// doorColorTexture.offset.set(0.5, 0,5);
+// doorColorTexture.center.set(0.5, 0.5);
+// doorColorTexture.rotation = Math.PI / 4;
+doorColorTexture.repeat.set( 2, 3);  // 水平2次,Y轴3次
+// 设置纹理重复的模式
+doorColorTexture.wrapS = THREE.MirroredRepeatWrapping;
+// doorColorTexture.wrapS = THREE.RepeatWrapping;
+doorColorTexture.wrapT = THREE.RepeatWrapping;
 
 // 添加物体
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
 // 材质
 const basicMaterial = new THREE.MeshBasicMaterial({
   color: "#ffff00",
-  map: doorColorTexture,
-  alphaMap: doorAlphaTexture,
-  // opacity: 0.5,
-  side: THREE.DoubleSide,
-  transparent: true,
-  aoMap:doorAoTexture,
-  aoMapIntensity: 0.8
+   map: doorColorTexture,
 });
-const cube = new THREE.Mesh(cubeGeometry, basicMaterial);  
+const cube = new THREE.Mesh(cubeGeometry, basicMaterial);
 scene.add(cube)
-
-// 添加平面
-const planeGeometry = new THREE.PlaneGeometry(1, 1); //   PlaneGeometry 的 别名 PlaneBufferGeometry 当前版本
-const plane = new THREE.Mesh(planeGeometry, basicMaterial);
-plane.position.set(3, 0, 0);
-
-// 给平面设置第二组uv
-// 给平面设置第二组uv
-planeGeometry.setAttribute(
-  "uv2",
-  new THREE.BufferAttribute(planeGeometry.attributes.uv.array, 2)
-);
-
 
 //  创建渲染器
 const  renderer   = new THREE.WebGL1Renderer()

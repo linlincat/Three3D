@@ -19,7 +19,6 @@ const textureLoader = new THREE.TextureLoader();
 // 载入颜色纹理
 const doorColorTexture = textureLoader.load("./textures/door/color.jpg");
 const doorAlphaTexture = textureLoader.load("./textures/door/alpha.jpg");
-const doorAoTexture = textureLoader.load("./textures/door/ambientOcclusion.jpg");
 
 // 添加物体
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -28,27 +27,17 @@ const basicMaterial = new THREE.MeshBasicMaterial({
   color: "#ffff00",
   map: doorColorTexture,
   alphaMap: doorAlphaTexture,
-  // opacity: 0.5,
+  opacity: 0.5,
   side: THREE.DoubleSide,
-  transparent: true,
-  aoMap:doorAoTexture,
-  aoMapIntensity: 0.8
+  transparent: true
 });
-const cube = new THREE.Mesh(cubeGeometry, basicMaterial);  
+const cube = new THREE.Mesh(cubeGeometry, basicMaterial);
 scene.add(cube)
 
 // 添加平面
-const planeGeometry = new THREE.PlaneGeometry(1, 1); //   PlaneGeometry 的 别名 PlaneBufferGeometry 当前版本
-const plane = new THREE.Mesh(planeGeometry, basicMaterial);
-plane.position.set(3, 0, 0);
-
-// 给平面设置第二组uv
-// 给平面设置第二组uv
-planeGeometry.setAttribute(
-  "uv2",
-  new THREE.BufferAttribute(planeGeometry.attributes.uv.array, 2)
-);
-
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), basicMaterial);
+plane.position.set(3, 0 ,0)
+scene.add(plane);
 
 //  创建渲染器
 const  renderer   = new THREE.WebGL1Renderer()
