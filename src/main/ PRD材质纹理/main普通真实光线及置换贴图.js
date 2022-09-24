@@ -20,47 +20,35 @@ const textureLoader = new THREE.TextureLoader();
 const doorColorTexture = textureLoader.load("./textures/door/color.jpg");
 const doorAlphaTexture = textureLoader.load("./textures/door/alpha.jpg");
 const doorAoTexture = textureLoader.load("./textures/door/ambientOcclusion.jpg");
-// 导入置换图片
-const doorHeightTexture = textureLoader.load("./textures/door/height.jpg");
 
 // 添加物体
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-// 标准材质
-const material = new THREE.MeshStandardMaterial({
+// 基础材质
+const basicMaterial = new THREE.MeshBasicMaterial({
   color: "#ffff00",
   map: doorColorTexture,
-  alphaMap: doorAlphaTexture,  // alpha贴图是一张灰度纹理，用于控制整个表面的不透明度。
+  alphaMap: doorAlphaTexture,
   // opacity: 0.5,
-  side: THREE.DoubleSide,                         // 面方向
-  transparent: true,                                     // 根据alphaMap贴图设置透明度
-  aoMap:doorAoTexture,                            // 该纹理的红色通道用作环境遮挡贴图。默认值为null。aoMap需要第二组UV。
-  aoMapIntensity: 0.8,                               // 环境遮挡效果的强度
-  displacementMap: doorHeightTexture, // 设置置换
-  displacementScale: 0.05,
+  side: THREE.DoubleSide,
+  transparent: true,
+  aoMap:doorAoTexture,
+  aoMapIntensity: 0.8
 });
-const cube = new THREE.Mesh(cubeGeometry, material);  
+const cube = new THREE.Mesh(cubeGeometry, basicMaterial);  
 scene.add(cube)
 
 // 添加平面
-const planeGeometry = new THREE.PlaneGeometry(1, 1, 200, 200); //   PlaneGeometry 的 别名 PlaneBufferGeometry 当前版本
-const plane = new THREE.Mesh(planeGeometry, material);
-plane.position.set(1, 0, 0);
+const planeGeometry = new THREE.PlaneGeometry(1, 1); //   PlaneGeometry 的 别名 PlaneBufferGeometry 当前版本
+const plane = new THREE.Mesh(planeGeometry, basicMaterial);
+plane.position.set(3, 0, 0);
 
-scene.add(plane)
-
+// 给平面设置第二组uv
 // 给平面设置第二组uv
 planeGeometry.setAttribute(
   "uv2",
   new THREE.BufferAttribute(planeGeometry.attributes.uv.array, 2)
 );
 
-// 环境光
-const light = new THREE.AmbientLight( 0xffffff, 0.5 ); // soft white light
-scene.add( light );
-// 平行/直线光
-const directionalLight = new THREE.DirectionalLight( 0xffffff , 0.5); // soft white light
-directionalLight.position.set(10, 10, 10)
-scene.add( directionalLight );
 
 //  创建渲染器
 const  renderer   = new THREE.WebGL1Renderer()

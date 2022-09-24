@@ -23,8 +23,8 @@ const doorAoTexture = textureLoader.load("./textures/door/ambientOcclusion.jpg")
 
 // 添加物体
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-// 材质
-const basicMaterial = new THREE.MeshBasicMaterial({
+// 标准材质
+const material = new THREE.MeshBasicMaterial({
   color: "#ffff00",
   map: doorColorTexture,
   alphaMap: doorAlphaTexture,
@@ -34,15 +34,16 @@ const basicMaterial = new THREE.MeshBasicMaterial({
   aoMap:doorAoTexture,
   aoMapIntensity: 0.8
 });
-const cube = new THREE.Mesh(cubeGeometry, basicMaterial);  
+const cube = new THREE.Mesh(cubeGeometry, material);  
 scene.add(cube)
 
 // 添加平面
 const planeGeometry = new THREE.PlaneGeometry(1, 1); //   PlaneGeometry 的 别名 PlaneBufferGeometry 当前版本
-const plane = new THREE.Mesh(planeGeometry, basicMaterial);
-plane.position.set(3, 0, 0);
+const plane = new THREE.Mesh(planeGeometry, material);
+plane.position.set(1, 0, 0);
 
-// 给平面设置第二组uv
+scene.add(plane)
+
 // 给平面设置第二组uv
 planeGeometry.setAttribute(
   "uv2",
