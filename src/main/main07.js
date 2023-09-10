@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-// 适应屏幕宽度
+// gsap 插件补间动画
 
 // 轨道控制器（OrbitControls）
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -60,8 +60,6 @@ document.body.appendChild(renderer.domElement);
 
 // 创建轨道控制器
 const controls = new OrbitControls(camera, renderer.domElement);
-// 控制器阻尼,让控制器更加真实
-controls.enableDamping = true;
 
 // 添加坐标轴辅助器
 // 红色代表 X 轴. 绿色代表 Y 轴. 蓝色代表 Z 轴.
@@ -93,21 +91,8 @@ window.addEventListener("dblclick", () => {
 });
 
 function render() {
-  controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(render);
 }
 
 render();
-
-// 监听界面变化,更新渲染画面
-window.addEventListener("resize", () => {
-  // 更新摄像头  aspect表示摄像机视锥体长宽比
-  camera.aspect = window.innerWidth / window.innerHeight;
-  // 更新摄像头的投影矩阵,在3维的世界里使用矩阵算法映射到屏幕出来的
-  camera.updateProjectionMatrix();
-  // 更新渲染器
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  // 奢者渲染器的像素比例
-  renderer.setPixelRatio(window.devicePixelRatio);
-});
