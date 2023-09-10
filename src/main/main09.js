@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
-// 酷炫的三角形
+// BufferGeometry 缓冲徒形创建矩形
 
-// attributes: normal:朝向如光线照射,折射的角度等    position:物体的顶点位置   uv:颜色渲染的位置
+// attributes: normal:朝向如光线照射,折射的角度等    position:物体的位置   uv:颜色渲染的位置
 
 // 轨道控制器（OrbitControls）
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -29,32 +29,20 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0, 10);
 scene.add(camera);
 
-for (let i = 0; i < 50; i++) {
-  const geometry = new THREE.BufferGeometry();
-  // Float32Array(0) 没有添加进去,因此默认的时候添加9表示有9个点
-  // 因为它是缓冲区的一个数组
-  const positionArray = new Float32Array(9);
-  for (let j = 0; j < 9; j++) {
-    positionArray[j] = Math.random() * 10 - 5;
-  }
-  geometry.setAttribute(
-    "position",
-    new THREE.BufferAttribute(positionArray, 3)
-  );
-  let color = new THREE.Color(Math.random(), Math.random(), Math.random());
-  //   基础网格材质(MeshBasicMaterial)
-  // 一个以简单着色（平面或线框）方式来绘制几何体的材质。
-  // 这种材质不受光照的影响。
-  const material = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0.5, // transparent为true才会生效
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  console.log(mesh);
+// 添加物体 Buffer 缓冲
+// BufferGeometry 是面片、线或点几何体的有效表述。包括顶点位置，面片索引、法相量、颜色值、UV 坐标和自定义缓存属性值。
+const geometry = new THREE.BufferGeometry();
+const vertices = new Float32Array([
+  -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
+  -1.0, -1.0, 1.0,
+]);
+// itemSize = 3 因为每个顶点都是一个三元组。
+// BufferAttribute( array : TypedArray, itemSize : Integer, normalized : Boolean )
+geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const mesh = new THREE.Mesh(geometry, material);
 
-  scene.add(mesh);
-}
+scene.add(mesh);
 
 // 初始化渲染器
 const renderer = new THREE.WebGL1Renderer();

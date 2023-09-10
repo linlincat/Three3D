@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
-// 酷炫的三角形
+// 适应屏幕宽度
 
-// attributes: normal:朝向如光线照射,折射的角度等    position:物体的顶点位置   uv:颜色渲染的位置
+// attributes: normal:朝向如光线照射,折射的角度等    position:物体的位置   uv:颜色渲染的位置
 
 // 轨道控制器（OrbitControls）
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -29,32 +29,25 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0, 10);
 scene.add(camera);
 
-for (let i = 0; i < 50; i++) {
-  const geometry = new THREE.BufferGeometry();
-  // Float32Array(0) 没有添加进去,因此默认的时候添加9表示有9个点
-  // 因为它是缓冲区的一个数组
-  const positionArray = new Float32Array(9);
-  for (let j = 0; j < 9; j++) {
-    positionArray[j] = Math.random() * 10 - 5;
-  }
-  geometry.setAttribute(
-    "position",
-    new THREE.BufferAttribute(positionArray, 3)
-  );
-  let color = new THREE.Color(Math.random(), Math.random(), Math.random());
-  //   基础网格材质(MeshBasicMaterial)
-  // 一个以简单着色（平面或线框）方式来绘制几何体的材质。
-  // 这种材质不受光照的影响。
-  const material = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0.5, // transparent为true才会生效
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  console.log(mesh);
+// 添加物体
+// 创建几何体
+const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+// 材质
+const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+//根据几何体与材质创建物体
+const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
-  scene.add(mesh);
-}
+// 修改物体的位置
+// cube.position.x(5)
+// cube.position.set(5, 0, 0);
+// 缩放
+// cube.scale.x(5)
+// cube.scale.set(1, 2, 3);
+// 旋转
+// cube.rotation.set(Math.PI / 4, 0, 0, "XYZ");
+
+// 将几何体添加到场景中
+scene.add(cube);
 
 // 初始化渲染器
 const renderer = new THREE.WebGL1Renderer();
@@ -77,6 +70,22 @@ controls.enableDamping = true;
 const axesHelper = new THREE.AxesHelper(5);
 scene.add(axesHelper);
 
+// 设置动画  会返回一个动画对象 [tween 在……之间]
+var animate1 = gsap.to(cube.position, {
+  x: 5,
+  duration: 5,
+  ease: "power1.inOut",
+  repeat: -1,
+  yoyo: true,
+  onComplete: () => {
+    console.log("game over");
+  },
+  onStart: () => {
+    console.log("animate start");
+  },
+});
+gsap.to(cube.rotation, { x: Math.PI * 2, duration: 5 });
+
 window.addEventListener("dblclick", () => {
   if (animate1.isActive()) {
     animate1.pause();
@@ -92,3 +101,15 @@ function render() {
 }
 
 render();
+
+// 监听界面变化,更新渲染画面
+window.addEventListener("resize", () => {
+  // 更新摄像头  aspect表示摄像机视锥体长宽比
+  camera.aspect = window.innerWidth / window.innerHeight;
+  // 更新摄像头的投影矩阵,在3维的世界里使用矩阵算法映射到屏幕出来的
+  camera.updateProjectionMatrix();
+  // 更新渲染器
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  // 奢者渲染器的像素比例
+  renderer.setPixelRatio(window.devicePixelRatio);
+});
