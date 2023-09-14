@@ -1,6 +1,8 @@
 import * as THREE from "three";
 
-// 材质加载进度- 纹理加载进度
+// 纹理
+
+// attributes: normal:朝向如光线照射,折射的角度等[法线 ]    position:物体的顶点位置   uv:颜色渲染的位置
 
 // 轨道控制器（OrbitControls）
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -11,6 +13,11 @@ import gsap from "gsap";
 const scene = new THREE.Scene();
 
 //2 创建相机  透视相机[比较真实的场景]
+// PerspectiveCamera( fov : Number, aspect : Number, near : Number, far : Number )
+// fov — 摄像机视锥体垂直视野角度
+// aspect — 摄像机视锥体长宽比
+// near — 摄像机视锥体近端面
+// far — 摄像机视锥体远端面
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -22,60 +29,29 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0, 10);
 scene.add(camera);
 
-// let event = {};
-// 单张纹理图加载
-// event.onLoad = function () {
-//   console.log("onLoad");
-// };
-// event.onProgress = function () {
-//   console.log("onProgress");
-// };
-// event.onError = function () {
-//   console.log("onError");
-// };
-
-var div = document.createElement("div");
-div.style.width = "200px";
-div.style.height = "200px";
-div.style.position = "fixed";
-div.style.right = 0;
-div.style.top = 0;
-div.style.color = "#fff";
-document.body.appendChild(div);
-let event = {};
-// 单张纹理图的加载
-event.onLoad = function () {
-  console.log("图片加载完成");
-};
-event.onProgress = function (url, num, total) {
-  console.log("图片加载完成:", url);
-  console.log("图片加载进度:", num);
-  console.log("图片总数:", total);
-  let value = ((num / total) * 100).toFixed(2) + "%";
-  console.log("加载进度的百分比：", value);
-  div.innerHTML = value;
-};
-event.onError = function (e) {
-  console.log("图片加载出现错误");
-  console.log(e);
-};
-
-// 设置加载管理器
-const loadingManager = new THREE.LoadingManager(
-  event.onLoad,
-  event.onProgress,
-  event.onError
-);
-
 //  导入纹理
 // 加载texture的一个类。 内部使用ImageLoader来加载文件。
-const textTureLoader = new THREE.TextureLoader(loadingManager);
-const doorColorTexture = textTureLoader.load(
-  "./textures/door/color.jpg"
-  // event.onLoad,
-  // event.onProgress,
-  // event.onError
-);
+const textTureLoader = new THREE.TextureLoader();
+const doorColorTexture = textTureLoader.load("./textures/door/color.jpg");
+
+// const texture = textTureLoader.load("./textures/minecraft.png");
+// texture.minFilter = THREE.NearestFilter;
+// texture.magFilter = THREE.NearestFilter;
+// texture.minFilter = THREE.LinearFilter;
+// texture.magFilter = THREE.LinearFilter;
+
+// x 范围 0 - 1;
+// doorColorTexture.offset.x = 0.5;
+// doorColorTexture.offset.y = 0.5;
+// doorColorTexture.offset.set(0.5.0.5)
+
+// doorColorTexture.center.set(0.5, 0.5);
+// doorColorTexture.rotation = Math.PI / 4;
+// doorColorTexture.wrapS = THREE.MirroredRepeatWrapping;
+// doorColorTexture.wrapT = THREE.RepeatWrapping;
+// doorColorTexture.repeat.set(2, 2);
+// var targetObject = new THREE.Object3D(); scene.add(targetObject);
+// light.target = targetObject; 完成上述操作后，平行光现在就可以追踪到目标对像了。
 
 // 添加物体
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -85,6 +61,8 @@ const basicMaterial = new THREE.MeshBasicMaterial({
   // 颜色贴图。可以选择包括一个alpha通道
   map: doorColorTexture,
   side: THREE.DoubleSide,
+  // map: texture,
+  // aoMap: Texture, 需要第二组uv
 });
 
 // 添加到场景
@@ -94,6 +72,8 @@ scene.add(cube);
 // 添加一个平面
 const planeGeometry = new THREE.PlaneGeometry(1, 1);
 const plane = new THREE.Mesh(planeGeometry, basicMaterial);
+// console.log(plane);
+// plane.position.x = 2;
 plane.position.set(5, 5, 5);
 planeGeometry.setAttribute(
   "uv2",
