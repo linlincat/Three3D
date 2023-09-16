@@ -4,13 +4,23 @@ import * as THREE from "three";
 
 // 轨道控制器（OrbitControls）
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-// gsap导入动画库
 import gsap from "gsap";
+// 导入dat.gui
+import * as dat from "dat.gui";
+// import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+// 目标：阴影的属性与投影相机原理
+// 灯光阴影
+// 1、材质要满足能够对光照有反应
+// 2、设置渲染器开启阴影的计算 renderer.shadowMap.enabled = true;
+// 3、设置光照投射阴影 directionalLight.castShadow = true;
+// 4、设置物体投射阴影 sphere.castShadow = true;
+// 5、设置物体接收阴影 plane.receiveShadow = true;
 
-//1 新建场景
+const gui = new dat.GUI();
+// 1、创建场景
 const scene = new THREE.Scene();
 
-//2 创建相机  透视相机[比较真实的场景]
+// 2、创建相机
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -22,118 +32,103 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0, 10);
 scene.add(camera);
 
-// let event = {};
-// 单张纹理图加载
-// event.onLoad = function () {
-//   console.log("onLoad");
-// };
-// event.onProgress = function () {
-//   console.log("onProgress");
-// };
-// event.onError = function () {
-//   console.log("onError");
-// };
+const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
+const material = new THREE.MeshStandardMaterial();
+const sphere = new THREE.Mesh(sphereGeometry, material);
+// 投射阴影
+sphere.castShadow = true;
+scene.add(sphere);
 
-var div = document.createElement("div");
-div.style.width = "200px";
-div.style.height = "200px";
-div.style.position = "fixed";
-div.style.right = 0;
-div.style.top = 0;
-div.style.color = "#fff";
-document.body.appendChild(div);
-let event = {};
-// 单张纹理图的加载
-event.onLoad = function () {
-  console.log("图片加载完成");
-};
-event.onProgress = function (url, num, total) {
-  console.log("图片加载完成:", url);
-  console.log("图片加载进度:", num);
-  console.log("图片总数:", total);
-  let value = ((num / total) * 100).toFixed(2) + "%";
-  console.log("加载进度的百分比：", value);
-  div.innerHTML = value;
-};
-event.onError = function (e) {
-  console.log("图片加载出现错误");
-  console.log(e);
-};
-
-// 设置加载管理器
-const loadingManager = new THREE.LoadingManager(
-  event.onLoad,
-  event.onProgress,
-  event.onError
-);
-
-//  导入纹理
-// 加载texture的一个类。 内部使用ImageLoader来加载文件。
-const textTureLoader = new THREE.TextureLoader(loadingManager);
-const doorColorTexture = textTureLoader.load(
-  "./textures/door/color.jpg"
-  // event.onLoad,
-  // event.onProgress,
-  // event.onError
-);
-
-// 添加物体
-const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-// 材质
-const basicMaterial = new THREE.MeshBasicMaterial({
-  color: "#ffff00",
-  // 颜色贴图。可以选择包括一个alpha通道
-  map: doorColorTexture,
-  side: THREE.DoubleSide,
-});
-
-// 添加到场景
-const cube = new THREE.Mesh(cubeGeometry, basicMaterial);
-scene.add(cube);
-
-// 添加一个平面
-const planeGeometry = new THREE.PlaneGeometry(1, 1);
-const plane = new THREE.Mesh(planeGeometry, basicMaterial);
-plane.position.set(5, 5, 5);
-planeGeometry.setAttribute(
-  "uv2",
-  new THREE.BufferAttribute(planeGeometry.attributes.uv.array, 2)
-);
-
+// // 创建平面
+const planeGeometry = new THREE.PlaneGeometry(50, 50);
+const plane = new THREE.Mesh(planeGeometry, material);
+plane.position.set(0, -1, 0);
+plane.rotation.x = -Math.PI / 2;
+// 接收阴影
+plane.receiveShadow = true;
 scene.add(plane);
-// 初始化渲染器
-const renderer = new THREE.WebGL1Renderer();
-// 设置渲染到尺寸大小
-renderer.setSize(window.innerWidth, window.innerHeight);
 
-// 将webgl渲染的canvas添加到body上
+// 灯光
+// 环境光
+const light = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
+scene.add(light);
+//直线光源
+// const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+//直线光源
+const pointLight = new THREE.PointLight(0xffff00, 1);
+// pointLight.position.set(2, 2, 2);
+pointLight.castShadow = true;
+
+// 设置阴影贴图模糊度
+pointLight.shadow.radius = 20;
+// 设置阴影贴图的分辨率
+pointLight.shadow.mapSize.set(512, 512);
+
+// 设置透视相机的属性
+
+scene.add(pointLight);
+const smallBall = new THREE.Mesh(
+  new THREE.SphereGeometry(0.1, 20, 20),
+  new THREE.MeshBasicMaterial({ color: 0xffff00 })
+);
+smallBall.position.set(2, 2, 2);
+smallBall.add(pointLight);
+scene.add(smallBall);
+gui.add(pointLight.position, "x").min(-5).max(5).step(0.1);
+gui.add(pointLight, "distance").min(0).max(5).step(0.001);
+gui.add(pointLight, "decay").min(0).max(5).step(0.01);
+// // 初始化渲染器
+const renderer = new THREE.WebGLRenderer();
+// 设置渲染的尺寸大小
+renderer.setSize(window.innerWidth, window.innerHeight);
+// 开启场景中的阴影贴图
+renderer.shadowMap.enabled = true;
+// 新版本不需要设置这个了,可以直接decay就可以
+// renderer.physicallyCorrectLights = true; https://github.com/mrdoob/three.js/pull/25556
+// 更改了名字 默认值false
+renderer.useLegacyLights = true;
+
+// console.log(renderer);
+// 将webgl渲染的canvas内容添加到body
 document.body.appendChild(renderer.domElement);
 
-//使用渲染器,通过相机将场景渲染进来
+// // 使用渲染器，通过相机将场景渲染进来
 // renderer.render(scene, camera);
 
 // 创建轨道控制器
 const controls = new OrbitControls(camera, renderer.domElement);
-// 控制器阻尼,让控制器更加真实
+// 设置控制器阻尼，让控制器更有真实效果,必须在动画循环里调用.update()。
 controls.enableDamping = true;
 
 // 添加坐标轴辅助器
-// 红色代表 X 轴. 绿色代表 Y 轴. 蓝色代表 Z 轴.
-const axesHelper = new THREE.AxesHelper(5);
+const axesHelper = new THREE.AxesHelper(10);
 scene.add(axesHelper);
 
-window.addEventListener("dblclick", () => {
-  if (animate1.isActive()) {
-    animate1.pause();
-  } else {
-    animate1.resume();
-  }
-});
+const clock = new THREE.Clock();
 
 function render() {
+  let time = clock.getElapsedTime();
+  smallBall.position.x = Math.sin(time) * 3; // -3 - 3
+  smallBall.position.z = Math.cos(time) * 3; // -3 - 3
+  smallBall.position.y = 2 + Math.sin(time * 10) / 2;
   controls.update();
   renderer.render(scene, camera);
+  //   渲染下一帧的时候就会调用render函数
   requestAnimationFrame(render);
 }
 
 render();
+
+// 监听画面变化，更新渲染画面
+window.addEventListener("resize", () => {
+  //   console.log("画面变化了");
+  // 更新摄像头
+  camera.aspect = window.innerWidth / window.innerHeight;
+  //   更新摄像机的投影矩阵
+  camera.updateProjectionMatrix();
+
+  //   更新渲染器
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  //   设置渲染器的像素比
+  renderer.setPixelRatio(window.devicePixelRatio);
+});
