@@ -1,20 +1,7 @@
 import * as THREE from "three";
-
-// 材质加载进度- 纹理加载进度
-
-// 轨道控制器（OrbitControls）
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import gsap from "gsap";
-// 导入dat.gui
 import * as dat from "dat.gui";
-// import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-// 目标：阴影的属性与投影相机原理
-// 灯光阴影
-// 1、材质要满足能够对光照有反应
-// 2、设置渲染器开启阴影的计算 renderer.shadowMap.enabled = true;
-// 3、设置光照投射阴影 directionalLight.castShadow = true;
-// 4、设置物体投射阴影 sphere.castShadow = true;
-// 5、设置物体接收阴影 plane.receiveShadow = true;
 
 const gui = new dat.GUI();
 // 1、创建场景
@@ -25,70 +12,108 @@ const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  25
+);
+
+const particlesTextureLoader = new THREE.TextureLoader();
+const particlesTexture = particlesTextureLoader.load(
+  "./textures/particles/1.png"
 );
 
 // 设置相机位置
 camera.position.set(0, 0, 10);
 scene.add(camera);
 
-const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
-const material = new THREE.MeshStandardMaterial();
-const sphere = new THREE.Mesh(sphereGeometry, material);
-// 投射阴影
-sphere.castShadow = true;
-scene.add(sphere);
+const params = {
+  count: 10000,
+  size: 0.1,
+  radius: 5,
+  branch: 6,
+  color: "#ff6030",
+  rotateScale: 0.3,
+  endColor: "#113984",
+};
 
-// // 创建平面
-const planeGeometry = new THREE.PlaneGeometry(50, 50);
-const plane = new THREE.Mesh(planeGeometry, material);
-plane.position.set(0, -1, 0);
-plane.rotation.x = -Math.PI / 2;
-// 接收阴影
-plane.receiveShadow = true;
-scene.add(plane);
+let geometry = null;
+let material = null;
+let points = null;
+const centerColor = new THREE.Color(params.color);
+const endColor = new THREE.Color(params.endColor);
+const generateGalaxy = () => {
+  // 生成顶点
+  geometry = new THREE.BufferGeometry();
+  // 随机位置
+  const positios = new Float32Array(params.count * 3);
+  //设置顶点颜色
+  const colors = new Float32Array(params.count * 3);
 
-// 灯光
-// 环境光
-const light = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
-scene.add(light);
-//直线光源
-// const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-//直线光源
-const pointLight = new THREE.PointLight(0xffff00, 1);
-// pointLight.position.set(2, 2, 2);
-pointLight.castShadow = true;
+  for (let i = 0; i < params.count; i++) {
+    // 当前点在哪一条分支的角度上
+    const branchAngel = (i % params.branch) * ((2 * Math.PI) / params.branch); // 0 120 240
 
-// 设置阴影贴图模糊度
-pointLight.shadow.radius = 20;
-// 设置阴影贴图的分辨率
-pointLight.shadow.mapSize.set(512, 512);
+    // 当前点距离圆心的位置
+    const distance = Math.random() * params.radius * Math.pow(Math.random(), 3); // Math.random() * params.radius;
+    // console.log("x=", Math.cos(branchAngel));
+    // console.log("z=", Math.sin(branchAngel));
+    const current = i * 3;
 
-// 设置透视相机的属性
+    const randomX =
+      (Math.pow(Math.random() * 2 - 1, 3) * (params.radius - distance)) / 5; // x的三次方与x的二次方的图像关系  就是 -1 - 1
+    const randomY =
+      (Math.pow(Math.random() * 2 - 1, 3) * (params.radius - distance)) / 5;
+    const randomZ =
+      (Math.pow(Math.random() * 2 - 1, 3) * (params.radius - distance)) / 5;
+    // positios[current] = Math.cos(branchAngel) * distance; //角度*距离
+    // positios[current + 1] = 0;
+    // positios[current + 2] = Math.sin(branchAngel) * distance;
+    // positios[current] =
+    //   Math.cos(branchAngel + distance * params.rotateScale) * distance; //角度*距离
+    // positios[current + 1] = 0;
+    // positios[current + 2] =
+    //   Math.sin(branchAngel + distance * params.rotateScale) * distance;
+    // 将固定值加上随机值就分散了
+    positios[current] =
+      Math.cos(branchAngel + distance * params.rotateScale) * distance +
+      randomX; //角度*距离
+    positios[current + 1] = randomY;
+    positios[current + 2] =
+      Math.sin(branchAngel + distance * params.rotateScale) * distance +
+      randomZ;
 
-scene.add(pointLight);
-const smallBall = new THREE.Mesh(
-  new THREE.SphereGeometry(0.1, 20, 20),
-  new THREE.MeshBasicMaterial({ color: 0xffff00 })
-);
-smallBall.position.set(2, 2, 2);
-smallBall.add(pointLight);
-scene.add(smallBall);
-gui.add(pointLight.position, "x").min(-5).max(5).step(0.1);
-gui.add(pointLight, "distance").min(0).max(5).step(0.001);
-gui.add(pointLight, "decay").min(0).max(5).step(0.01);
+    // 混合颜色,形成渐变色
+    const mixColor = centerColor.clone();
+    mixColor.lerp(endColor, distance / params.radius);
+    colors[current] = mixColor.r;
+    colors[current + 1] = mixColor.g;
+    colors[current + 2] = mixColor.b;
+  }
+
+  geometry.setAttribute("position", new THREE.BufferAttribute(positios, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+  // 设置点材质
+  material = new THREE.PointsMaterial({
+    // color: new THREE.Color(params.color),
+    size: params.size,
+    sizeAttenuation: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    map: particlesTexture,
+    alphaMap: particlesTexture,
+    transparent: true,
+    vertexColors: true,
+  });
+
+  points = new THREE.Points(geometry, material);
+  scene.add(points);
+};
+generateGalaxy();
+
 // // 初始化渲染器
 const renderer = new THREE.WebGLRenderer();
+
 // 设置渲染的尺寸大小
 renderer.setSize(window.innerWidth, window.innerHeight);
-// 开启场景中的阴影贴图
-renderer.shadowMap.enabled = true;
-// 新版本不需要设置这个了,可以直接decay就可以
-// renderer.physicallyCorrectLights = true; https://github.com/mrdoob/three.js/pull/25556
-// 更改了名字 默认值false
-renderer.useLegacyLights = true;
-
-// console.log(renderer);
 // 将webgl渲染的canvas内容添加到body
 document.body.appendChild(renderer.domElement);
 
@@ -108,9 +133,6 @@ const clock = new THREE.Clock();
 
 function render() {
   let time = clock.getElapsedTime();
-  smallBall.position.x = Math.sin(time) * 3; // -3 - 3
-  smallBall.position.z = Math.cos(time) * 3; // -3 - 3
-  smallBall.position.y = 2 + Math.sin(time * 10) / 2;
   controls.update();
   renderer.render(scene, camera);
   //   渲染下一帧的时候就会调用render函数
