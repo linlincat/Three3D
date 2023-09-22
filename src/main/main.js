@@ -24,90 +24,40 @@ const particlesTexture = particlesTextureLoader.load(
 camera.position.set(0, 0, 10);
 scene.add(camera);
 
-const params = {
-  count: 10000,
-  size: 0.1,
-  radius: 5,
-  branch: 6,
-  color: "#ff6030",
-  rotateScale: 0.3,
-  endColor: "#113984",
-};
+const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+const matarial = new THREE.MeshBasicMaterial({
+  wireframe: true,
+});
+const redMaterial = new THREE.MeshBasicMaterial({
+  color: "#ff0000",
+});
 
-let geometry = null;
-let material = null;
-let points = null;
-const centerColor = new THREE.Color(params.color);
-const endColor = new THREE.Color(params.endColor);
-const generateGalaxy = () => {
-  // 生成顶点
-  geometry = new THREE.BufferGeometry();
-  // 随机位置
-  const positios = new Float32Array(params.count * 3);
-  //设置顶点颜色
-  const colors = new Float32Array(params.count * 3);
-
-  for (let i = 0; i < params.count; i++) {
-    // 当前点在哪一条分支的角度上
-    const branchAngel = (i % params.branch) * ((2 * Math.PI) / params.branch); // 0 120 240
-
-    // 当前点距离圆心的位置
-    const distance = Math.random() * params.radius * Math.pow(Math.random(), 3); // Math.random() * params.radius;
-    // console.log("x=", Math.cos(branchAngel));
-    // console.log("z=", Math.sin(branchAngel));
-    const current = i * 3;
-
-    const randomX =
-      (Math.pow(Math.random() * 2 - 1, 3) * (params.radius - distance)) / 5; // x的三次方与x的二次方的图像关系  就是 -1 - 1
-    const randomY =
-      (Math.pow(Math.random() * 2 - 1, 3) * (params.radius - distance)) / 5;
-    const randomZ =
-      (Math.pow(Math.random() * 2 - 1, 3) * (params.radius - distance)) / 5;
-    // positios[current] = Math.cos(branchAngel) * distance; //角度*距离
-    // positios[current + 1] = 0;
-    // positios[current + 2] = Math.sin(branchAngel) * distance;
-    // positios[current] =
-    //   Math.cos(branchAngel + distance * params.rotateScale) * distance; //角度*距离
-    // positios[current + 1] = 0;
-    // positios[current + 2] =
-    //   Math.sin(branchAngel + distance * params.rotateScale) * distance;
-    // 将固定值加上随机值就分散了
-    positios[current] =
-      Math.cos(branchAngel + distance * params.rotateScale) * distance +
-      randomX; //角度*距离
-    positios[current + 1] = randomY;
-    positios[current + 2] =
-      Math.sin(branchAngel + distance * params.rotateScale) * distance +
-      randomZ;
-
-    // 混合颜色,形成渐变色
-    const mixColor = centerColor.clone();
-    mixColor.lerp(endColor, distance / params.radius);
-    colors[current] = mixColor.r;
-    colors[current + 1] = mixColor.g;
-    colors[current + 2] = mixColor.b;
+// 创建物体
+let cubeArr = [];
+for (let i = -5; i < 5; i++) {
+  for (let j = -5; j < 5; j++) {
+    for (let z = -5; z < 5; z++) {
+      const cube = new THREE.Mesh(cubeGeometry, matarial);
+      cube.position.set(i, j, z);
+      scene.add(cube);
+      cubeArr.push(cube);
+    }
   }
+}
 
-  geometry.setAttribute("position", new THREE.BufferAttribute(positios, 3));
-  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+// 创建投射光线对象
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-  // 设置点材质
-  material = new THREE.PointsMaterial({
-    // color: new THREE.Color(params.color),
-    size: params.size,
-    sizeAttenuation: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    map: particlesTexture,
-    alphaMap: particlesTexture,
-    transparent: true,
-    vertexColors: true,
-  });
+window.addEventListener("mousemove", (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1; // (0-1)*2-1    -1 到 1
+  mouse.y = -((event.clientY / window.innerHeight) * 2 - 1);
 
-  points = new THREE.Points(geometry, material);
-  scene.add(points);
-};
-generateGalaxy();
+  // 通过摄像机和鼠标位置更新射线
+  raycaster.setFromCamera(mouse, camera);
+  let result = raycaster.intersectObjects(cubeArr);
+  result[0].object.material = redMaterial;
+});
 
 // // 初始化渲染器
 const renderer = new THREE.WebGLRenderer();
